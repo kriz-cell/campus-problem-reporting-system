@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Campus Problem Reporting System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* layout: plain text menu on the left, a ruled register of complaints in the middle, paper and ink with one maroon accent */
+  --paper:#ebe7dc; --surface:#f8f6f0; --side:#e2ddcf; --ink:#1c1b18; --muted:#66625a; --line:#cdc7b6; --field:#fffefa;
+  --accent:#8a1f2d; --accent-ink:#ffffff; --accent-soft:#f1dcdd;
+  --n-bg:#e1dccd; --n-fg:#55524a; --y-bg:#f0e0b4; --y-fg:#6e4a00; --o-bg:#f3d9c2; --o-fg:#823800; --b-bg:#d3e1ee; --b-fg:#1d4875; --g-bg:#d1e5d4; --g-fg:#1d5733;
+  --display:"IBM Plex Sans","Segoe UI",system-ui,sans-serif; --body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#15140f; --surface:#1d1c16; --side:#191812; --ink:#ece8dc; --muted:#a19c8d; --line:#37352b; --field:#14130e;
+  --accent:#e0707c; --accent-ink:#1a0b0d; --accent-soft:#3a1d21;
+  --n-bg:#2c2a22; --n-fg:#bdb8a9; --y-bg:#3d3210; --y-fg:#eacb72; --o-bg:#40240f; --o-fg:#f0b07c; --b-bg:#17304a; --b-fg:#9cc3ea; --g-bg:#16351f; --g-fg:#8fd3a0; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#15140f; --surface:#1d1c16; --side:#191812; --ink:#ece8dc; --muted:#a19c8d; --line:#37352b; --field:#14130e;
+  --accent:#e0707c; --accent-ink:#1a0b0d; --accent-soft:#3a1d21;
+  --n-bg:#2c2a22; --n-fg:#bdb8a9; --y-bg:#3d3210; --y-fg:#eacb72; --o-bg:#40240f; --o-fg:#f0b07c; --b-bg:#17304a; --b-fg:#9cc3ea; --g-bg:#16351f; --g-fg:#8fd3a0; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:var(--body);background:var(--paper);color:var(--ink);font-size:15px;line-height:1.5}
+h1,h2,h3{font-family:var(--display);font-weight:600;margin:0;line-height:1.2;text-wrap:balance}
+h1{font-size:26px} h2{font-size:18px} h3{font-size:15px}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sr{position:absolute;left:-9999px}
+#app{height:100%}
+.app{display:flex;height:100%}
+.ic{display:none}
+.side{width:230px;background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:22px 0;flex-shrink:0;overflow-y:auto}
+.logo{padding:0 22px 22px;border-bottom:1px solid var(--line);margin-bottom:12px;font-weight:700;font-size:20px;letter-spacing:.02em;display:block}
+.logo small{display:block;font-weight:400;font-size:12px;color:var(--muted);letter-spacing:0;margin-top:2px;line-height:1.3}
+.side nav{display:flex;flex-direction:column}
+.side nav button{background:none;border:0;border-left:3px solid transparent;text-align:left;padding:10px 22px 10px 19px;font-weight:500;color:var(--ink);display:flex;justify-content:space-between;align-items:center}
+.side nav button:hover{background:rgba(0,0,0,.04)}
+.side nav button[aria-current="page"]{border-left-color:var(--accent);color:var(--accent);font-weight:700;background:var(--surface)}
+.badge{background:var(--accent);color:var(--accent-ink);font-size:12px;font-weight:700;padding:0 7px;border-radius:3px;min-width:20px;text-align:center;font-family:var(--mono)}
+.me{margin-top:auto;border-top:1px solid var(--line);padding:16px 22px 0;font-size:14px}
+.me b{display:block}.me span{color:var(--muted);font-size:13px}
+.me button{margin-top:10px;background:none;border:1px solid var(--ink);border-radius:4px;padding:6px 12px;font-weight:500}
+.me button:hover{background:var(--ink);color:var(--surface)}
+.av{display:none}
+.work{flex:1;min-width:0;overflow-y:auto}
+.topbar{display:flex;align-items:center;gap:14px;padding:12px 36px;border-bottom:1px solid var(--line);background:var(--surface);font-size:14px;color:var(--muted)}
+.topbar .date{flex:1}
+.gsearch{display:flex}
+.gsearch input{padding:7px 10px;border:1px solid var(--line);border-radius:4px;background:var(--field);width:220px}
+.ib{background:none;border:0;color:var(--accent);font-weight:600;padding:4px;text-decoration:underline;text-underline-offset:3px;position:relative}
+.ib:empty{display:none}
+.ib .badge{margin-left:6px}
+.page{padding:30px 36px 60px;max-width:1120px}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:22px;padding-bottom:16px;border-bottom:2px solid var(--ink)}
+.head p{margin:4px 0 0;color:var(--muted)}
+.cols{display:grid;grid-template-columns:1.2fr 1fr;gap:48px}
+@media (max-width:1000px){.cols{grid-template-columns:1fr;gap:30px}}
+@media (max-width:760px){.app{flex-direction:column}.side{width:100%;flex-direction:row;align-items:center;padding:8px;border-right:0;border-bottom:1px solid var(--line);overflow-x:auto}.logo{border:0;padding:0 14px 0 8px;margin:0}.logo small{display:none}.side nav{flex-direction:row}.side nav button{white-space:nowrap;border-left:0;border-bottom:3px solid transparent;padding:8px 12px}.side nav button[aria-current="page"]{border-bottom-color:var(--accent)}.me{display:none}.topbar{padding:10px 16px}.gsearch input{width:130px}.page{padding:22px 16px 50px}h1{font-size:23px}}
+.f{display:flex;flex-direction:column;gap:5px;margin-bottom:16px}
+label,.lab{font-weight:600;font-size:14px}
+input[type=text],input[type=email],input[type=password],select,textarea{padding:10px 12px;border:1px solid var(--ink);border-radius:4px;background:var(--field);width:100%}
+select{width:100%}
+textarea{min-height:92px;resize:vertical}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media (max-width:560px){.two{grid-template-columns:1fr}}
+.hint{font-size:13px;color:var(--muted)}
+.drop{border:1px dashed var(--ink);border-radius:4px;padding:14px;color:var(--muted)}
+.drop img{max-width:100%;max-height:170px;display:block;margin-top:10px;border-radius:3px}
+.check{display:flex;gap:10px;align-items:center;font-weight:500}
+.check input{width:18px;height:18px;accent-color:var(--accent)}
+.btn{border:1px solid var(--ink);background:transparent;border-radius:4px;padding:9px 16px;font-weight:600}
+.btn:hover{background:var(--ink);color:var(--surface)}
+.btn.main,.btn.blue{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.main:hover,.btn.blue:hover{filter:brightness(1.1);background:var(--accent);color:var(--accent-ink)}
+.btn.main{width:100%;padding:13px;font-size:16px}
+.btn.sm{padding:4px 10px;font-size:13px}
+.btn.bad{color:var(--accent);border-color:var(--accent)}
+.btn.bad:hover{background:var(--accent);color:var(--accent-ink)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+/* the register */
+.item{display:grid;grid-template-columns:62px 1fr auto auto;gap:14px;align-items:center;padding:12px 6px;border:0;border-bottom:1px solid var(--line);width:100%;background:none;text-align:left}
+.item:hover{background:var(--surface);box-shadow:inset 3px 0 0 var(--accent)}
+.ci{display:block;font-family:var(--mono);font-size:13px;color:var(--muted)}
+.item .t{font-weight:600}
+.item .m{color:var(--muted);font-size:13px;display:flex;gap:12px;flex-wrap:wrap;margin-top:1px}
+.item .cat{font-size:12px;color:var(--muted);white-space:nowrap}
+@media (max-width:640px){.item{grid-template-columns:1fr auto}.item .ci{display:none}.item .cat{display:none}}
+.pill{display:inline-block;padding:2px 9px;border-radius:3px;font-size:12px;font-weight:600;white-space:nowrap}
+.s-Submitted,.s-Closed{background:var(--n-bg);color:var(--n-fg)}
+.s-UnderReview{background:var(--y-bg);color:var(--y-fg)}
+.s-Assigned{background:var(--b-bg);color:var(--b-fg)}
+.s-InProgress{background:var(--o-bg);color:var(--o-fg)}
+.s-Resolved{background:var(--g-bg);color:var(--g-fg)}
+.chip{font-weight:600}
+.chip.High{color:var(--accent)}.chip.Medium{color:var(--y-fg)}.chip.Low{color:var(--g-fg)}
+.chip::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:currentColor;margin-right:5px}
+.chip:not(.High):not(.Medium):not(.Low)::before{display:none}
+.note{border-left:4px solid var(--y-fg);background:var(--surface);padding:14px 16px;margin-top:22px}
+.note .sim{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--ink);margin-bottom:28px;background:var(--surface)}
+@media (max-width:760px){.tiles{grid-template-columns:1fr 1fr}}
+.tile{padding:16px 18px;border-right:1px solid var(--line);position:relative}
+.tile:last-child{border-right:0}
+.tile .n{font-family:var(--mono);font-size:32px;font-weight:600;line-height:1}
+.tile .l{color:var(--muted);font-size:13px;margin-top:6px}
+.tile .ti{display:none}
+.tile.c4 .n{color:var(--accent)}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.toolbar input{flex:1;min-width:200px}.toolbar select{width:auto}
+.bars{display:flex;flex-direction:column;gap:10px}
+.bar{display:grid;grid-template-columns:130px 1fr 30px;gap:12px;align-items:center;font-size:14px}
+.bar .tr{background:var(--n-bg);height:12px}.bar i{display:block;height:12px;background:var(--ink)}
+.bar.alt i{background:var(--accent)}
+.bar b{font-family:var(--mono);text-align:right}
+.card{border:1px solid var(--ink);padding:20px;background:var(--surface)}
+.card h2{margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line)}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.scroll{overflow-x:auto}
+.switch{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.switch input{width:20px;height:20px;accent-color:var(--accent)}
+.nitem{display:flex;gap:12px;padding:14px 4px;border-bottom:1px solid var(--line)}
+.nitem .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);margin-top:8px;flex-shrink:0}
+.nitem.read .dot{background:transparent;border:1px solid var(--line)}
+.nitem.read{color:var(--muted)}
+.chart{display:block}
+.stack{display:flex;height:22px;border:1px solid var(--ink);margin-bottom:14px}
+.stack i{display:block;height:100%}
+.legend{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;font-size:14px}
+.legend span{display:flex;align-items:center;gap:8px}.legend i{width:11px;height:11px;flex-shrink:0;border:1px solid var(--ink)}.legend b{margin-left:auto;font-family:var(--mono)}
+.trend{display:flex;align-items:flex-end;gap:10px;height:150px}
+.trend div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;height:100%;font-size:12px;color:var(--muted)}
+.trend i{display:block;width:100%;background:var(--ink);min-height:3px}
+.trend div.today i{background:var(--accent)}.trend b{color:var(--ink);font-family:var(--mono);font-size:13px}
+.feed .fe{padding:11px 0;border-bottom:1px solid var(--line);font-size:14px}
+.empty{padding:28px 6px;color:var(--muted)}
+/* drawer */
+.scrim{position:fixed;inset:0;background:rgba(20,18,12,.5);z-index:30;display:flex;justify-content:flex-end}
+.drawer{width:min(540px,100%);height:100%;background:var(--surface);overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:18px;border-left:2px solid var(--ink)}
+.dhead{display:block}
+.stepper{display:flex}
+.stepper .st{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;font-size:11px;color:var(--muted);text-align:center;position:relative}
+.stepper .st::before{content:"";position:absolute;top:11px;left:-50%;width:100%;height:2px;background:var(--line)}
+.stepper .st:first-child::before{display:none}
+.stepper .st.on::before{background:var(--ink)}
+.stepper .dotc{width:24px;height:24px;border-radius:50%;background:var(--surface);border:2px solid var(--line);display:grid;place-items:center;position:relative;z-index:1;font-family:var(--mono);font-size:11px;font-weight:600}
+.stepper .st.on .dotc{border-color:var(--ink);background:var(--ink);color:var(--surface)}
+.stepper .st.cur .dotc{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.stepper .st.cur{color:var(--ink);font-weight:700}
+.timeline{list-style:none;margin:0;padding:0;border-left:2px solid var(--ink);display:flex;flex-direction:column;gap:12px;margin-left:5px}
+.timeline li{padding-left:14px;font-size:14px;position:relative}
+.timeline li::before{content:"";position:absolute;left:-6px;top:6px;width:10px;height:10px;background:var(--ink)}
+.timeline small{color:var(--muted);display:block}
+.cm{border-left:3px solid var(--line);padding:4px 12px;font-size:14px;margin-bottom:10px}
+.cm b{font-size:13px}
+.photo{max-width:100%;border:1px solid var(--line)}
+.stars{display:flex;gap:2px}
+.stars button{background:none;border:0;font-size:26px;color:var(--line);padding:0 2px}
+.stars button.on{color:var(--accent)}
+.toasts{position:fixed;right:18px;bottom:18px;display:flex;flex-direction:column;gap:8px;z-index:60;max-width:340px}
+.toast{background:var(--ink);color:var(--surface);padding:11px 15px;font-size:14px;border-radius:4px}
+.lg{display:grid;grid-template-columns:1fr 1fr;height:100%}
+@media (max-width:860px){.lg{grid-template-columns:1fr;overflow:auto}}
+.lg .l{background:var(--ink);color:var(--surface);padding:56px;display:flex;flex-direction:column;justify-content:center;gap:20px}
+.lg .l h1{font-size:40px;max-width:15ch;font-weight:700}
+.lg .l p{opacity:.75;font-size:17px;max-width:44ch;margin:0}
+.lg .st{display:flex;gap:34px;margin-top:6px;border-top:1px solid rgba(255,255,255,.25);padding-top:16px}
+.lg .st b{display:block;font-family:var(--mono);font-size:26px;font-weight:600}.lg .st span{font-size:13px;opacity:.7}
+.lg .logo{border:0;padding:0;margin:0;color:inherit}
+.lg .r{display:flex;align-items:center;justify-content:center;padding:32px;background:var(--surface)}
+.lg form{width:min(380px,100%)}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:0;margin:14px 0 20px;border:1px solid var(--ink)}
+.tabs button{border:0;background:transparent;padding:9px;font-weight:600;font-size:14px;border-right:1px solid var(--ink);border-bottom:1px solid var(--ink)}
+.tabs button:nth-child(2n){border-right:0}.tabs button:nth-child(n+3){border-bottom:0}
+.tabs button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<script>
+"use strict";
+const PLACES=["Block A","Block B","Hostel 3","Hostel 5","Main Library","Lecture Hall Complex","CSE Department","Workshop Block","Cafeteria","Sports Complex"];
+const STATUSES=["Submitted","Under Review","Assigned","In Progress","Resolved","Closed"];
+const ROLES={
+  student:{label:"Student",email:"ananya.verma@college.edu"},
+  admin:{label:"Department admin",email:"admin.estate@college.edu"},
+  staff:{label:"Maintenance staff",email:"harpreet.singh@college.edu"},
+  sysadmin:{label:"System admin",email:"sysadmin@college.edu"}
+};
+const NAV={
+  student:[["home","Home"],["report","Report a problem"],["mine","My complaints"],["issues","Campus issues"],["notes","Notifications"],["profile","Profile"]],
+  admin:[["dash","Dashboard"],["manage","Complaints"],["reports","Reports"],["notes","Notifications"],["profile","Profile"]],
+  staff:[["work","My work"],["issues","Campus issues"],["notes","Notifications"],["profile","Profile"]],
+  sysadmin:[["users","Users"],["setup","Setup"],["reports","Reports"],["profile","Profile"]]
+};
+const ico=()=>"";
+const catIcon=()=>"";
+const clsn=s=>s.replace(/\s/g,"");
+const fmt=ts=>new Date(ts).toLocaleString("en-IN",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
+const blankDraft=()=>({title:"",category:"",priority:"Medium",loc:"",desc:"",anon:false,photo:null});
+let D={me:null,complaints:[],notifs:[],users:[],staff:[],cats:[],depts:[],catDept:{}};
+let PUB={total:0,resolved:0};
+const U={role:null,view:null,open:null,q:"",fs:"All",fc:"All",sort:"new",hideDone:true,draft:blankDraft(),rate:0,reg:false,err:"",busy:false};
+function applyTheme(){const r=document.documentElement,t=D.me?D.me.theme:"auto";if(t==="auto")r.removeAttribute("data-theme");else r.setAttribute("data-theme",t)}
+
+/* ---------- talking to the server ---------- */
+async function api(path,body){
+  let r;
+  try{r=await fetch("/api/"+path,body===undefined?{credentials:"same-origin"}:{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})}
+  catch(e){throw new Error("Cannot reach the server. Is it running?")}
+  let j={};try{j=await r.json()}catch(_){}
+  if(r.status===401&&D.me){D.me=null;U.role=null;U.open=null;render()}
+  if(!r.ok)throw new Error(j.error||"Something went wrong.");
+  return j;
+}
+async function refresh(){
+  try{
+    const st=await api("state");
+    D=st;U.role=st.me.role;
+    if(!U.view||!NAV[U.role].some(n=>n[0]===U.view))U.view=NAV[U.role][0][0];
+    if(!D.cats.includes(U.draft.category))U.draft.category=D.cats[0]||"";
+  }catch(e){D.me=null;U.role=null;try{PUB=await api("public")}catch(_){}}
+  applyTheme();
+}
+async function act(fn,okMsg){
+  try{await fn();if(okMsg)toast(okMsg)}catch(e){toast(e.message)}
+  await refresh();render();
+}
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const esc=t=>String(t==null?"":t).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+const me=()=>D.me.name;
+const pill=s=>`<span class="pill s-${clsn(s)}">${s}</span>`;
+function toast(t){const d=document.createElement("div");d.className="toast";d.textContent=t;$("#toasts").append(d);setTimeout(()=>d.remove(),3800)}
+const who=c=>c.owner;
+const byId=id=>D.complaints.find(c=>c.id===id);
+const place=c=>c.loc.split("·")[0].trim();
+function similar(){
+  const d=U.draft,w=d.title.toLowerCase().split(/\W+/).filter(x=>x.length>3),b=d.loc.split("·")[0].trim().toLowerCase();
+  return D.complaints.filter(c=>!["Closed","Resolved"].includes(c.status)&&((c.category===d.category&&b&&c.loc.toLowerCase().includes(b))||(w.length&&w.some(x=>c.title.toLowerCase().includes(x))))).slice(0,2);
+}
+const mineOf=()=>D.complaints.filter(c=>c.mine);
+const unread=()=>D.notifs.filter(n=>!n.read).length;
+function hrs(ms){const h=ms/36e5;return h<48?Math.round(h)+" h":(h/24).toFixed(1)+" days"}
+
+/* ---------- views ---------- */
+function loginView(){
+  const r=U.lr||"student",R=ROLES[r],reg=U.reg;
+  const left=`<div class="l"><div class="logo">CPRS</div><h1>Report it. Track it. See it fixed.</h1><p>One place for students, teachers and staff to report campus problems and follow each one until it is resolved.</p>
+  <div class="st"><div><b>${PUB.total}</b><span>complaints logged</span></div><div><b>${PUB.resolved}</b><span>resolved</span></div><div><b>24x7</b><span>reporting</span></div></div></div>`;
+  const err=`<p class="hint" id="err" role="alert" style="color:var(--accent);margin:10px 0 0">${esc(U.err)}</p>`;
+  if(reg)return `<div class="lg">${left}<div class="r"><form id="rgf"><h2>Create a student account</h2><p class="hint" style="margin:6px 0 16px">Staff and admin accounts are created by the system admin.</p>
+  <div class="f"><label for="rn">Full name</label><input type="text" id="rn" autocomplete="name"></div>
+  <div class="f"><label for="re">College email</label><input type="email" id="re" autocomplete="username"></div>
+  <div class="f"><label for="rd">Department (optional)</label><input type="text" id="rd"></div>
+  <div class="f"><label for="rp">Password (6 or more characters)</label><input type="password" id="rp" autocomplete="new-password"></div>
+  <button class="btn main" type="submit">Create account</button>${err}<p class="hint" style="margin-top:14px">Already have an account? <button type="button" class="ib" data-act="toggle-reg">Sign in</button></p></form></div></div>`;
+  return `<div class="lg">${left}<div class="r"><form id="lf"><h2>Sign in</h2><p class="hint" style="margin:6px 0 0">Use your college email and password.</p>
+  <div class="f" style="margin-top:14px"><label for="em">College email</label><input type="email" id="em" value="${esc(U.em||"")}" autocomplete="username"></div>
+  <div class="f"><label for="pw">Password</label><input type="password" id="pw" autocomplete="current-password"></div>
+  <button class="btn main" type="submit">Sign in</button>${err}
+  <p class="hint" style="margin-top:14px">New student? <button type="button" class="ib" data-act="toggle-reg">Create an account</button></p>
+  <div style="margin-top:22px;padding-top:14px;border-top:1px solid var(--line)"><div class="lab" style="margin-bottom:6px">Sample accounts (password: password)</div>
+  <div class="tabs" role="group" aria-label="Sample accounts">${Object.entries(ROLES).map(([k,v])=>`<button type="button" data-act="lrole" data-r="${k}" aria-pressed="${k===r&&U.em===v.email}">${v.label}</button>`).join("")}</div></div></form></div></div>`;
+}
+function items(arr,empty,mode){
+  if(!arr.length)return `<div class="empty">${empty}</div>`;
+  return arr.map(c=>`<button class="item" data-act="open" data-id="${c.id}"><span class="ci">${esc(c.id)}</span><span><span class="t">${esc(c.title)}</span><span class="m"><span>${esc(c.loc)}</span>${mode==="full"?`<span class="chip ${c.priority}">${c.priority}</span><span>${c.votes} upvotes</span><span>${esc(who(c))}</span>`:""}</span></span><span class="cat">${c.category}</span>${pill(c.status)}</button>`).join("");
+}
+function tiles(arr){
+  const n=l=>arr.filter(c=>l.includes(c.status)).length;
+  const T=[["c1","clock",n(["Submitted","Under Review"]),"Waiting for review"],["c2","tool",n(["Assigned","In Progress"]),"Being worked on"],["c3","check",n(["Resolved","Closed"]),"Resolved or closed"],["c4","alert",arr.filter(c=>c.priority==="High"&&!["Resolved","Closed"].includes(c.status)).length,"High priority open"]];
+  return `<div class="tiles">${T.map(([c,i,v,l])=>`<div class="tile ${c}"><span class="ti">${ico(i,20)}</span><div class="n">${v}</div><div class="l">${l}</div></div>`).join("")}</div>`;
+}
+function filters(extra){
+  return `<div class="toolbar"><input id="q" type="text" placeholder="Search by title, location or ID" value="${esc(U.q)}" aria-label="Search complaints"><select id="fs" aria-label="Status"><option>All</option>${STATUSES.map(s=>`<option ${U.fs===s?"selected":""}>${s}</option>`).join("")}</select><select id="fc" aria-label="Category"><option>All</option>${D.cats.map(s=>`<option ${U.fc===s?"selected":""}>${s}</option>`).join("")}</select>${extra||""}</div>`;
+}
+function filtered(){
+  let v=D.complaints.filter(c=>(U.fs==="All"||c.status===U.fs)&&(U.fc==="All"||c.category===U.fc)&&(!U.q||(c.id+c.title+c.loc+c.category).toLowerCase().includes(U.q.toLowerCase())));
+  if(U.hideDone&&U.fs==="All"&&U.view==="issues")v=v.filter(c=>!["Closed"].includes(c.status));
+  v.sort((a,b)=>U.sort==="votes"?b.votes-a.votes:U.sort==="priority"?["High","Medium","Low"].indexOf(a.priority)-["High","Medium","Low"].indexOf(b.priority):b.created-a.created);
+  return v;
+}
+function bars(rows,alt){const m=Math.max(1,...rows.map(r=>r[1]));return `<div class="bars">${rows.map(([k,n])=>`<div class="bar ${alt?"alt":""}"><span>${esc(k)}</span><span class="tr"><i style="width:${n/m*100}%"></i></span><b>${n}</b></div>`).join("")}</div>`}
+
+const VIEWS={
+  home(){
+    const m=mineOf(),open=m.filter(c=>!["Closed"].includes(c.status)),pulse=D.complaints.filter(c=>!["Resolved","Closed"].includes(c.status)).sort((a,b)=>b.votes-a.votes).slice(0,3);
+    const ev=m.flatMap(c=>c.history.map(h=>({c,h}))).sort((a,b)=>b.h.ts-a.h.ts).slice(0,5);
+    return `<div class="head"><div><h1>Hello, ${esc(me().split(" ")[0])}</h1><p>Report a problem in under two minutes and follow it until it is fixed.</p></div><button class="btn blue" data-act="nav" data-v="report">Report a problem</button></div>
+    ${tiles(m)}
+    <div class="cols"><div><h2 style="margin-bottom:6px">Recent activity</h2><div class="feed">${ev.length?ev.map(({c,h})=>`<div class="fe">${ico("clock",18)}<div><b>${c.id} ${esc(c.title)}</b><div class="hint">${h.status} · ${fmt(h.ts)}</div></div></div>`).join(""):`<div class="empty">No activity yet.</div>`}</div></div>
+    <div><h2 style="margin-bottom:6px">Most upvoted open issues</h2>${items(pulse,"Nothing open right now.","full")}</div></div>`;
+  },
+  report(){
+    const d=U.draft,sim=similar(),mine=mineOf().slice(0,4);
+    return `<div class="head"><div><h1>Report a problem</h1><p>Takes less than 2 minutes</p></div></div>
+    <div class="cols"><form id="rf" novalidate>
+      <div class="f"><label for="title">Title</label><input type="text" id="title" value="${esc(d.title)}" placeholder="Example: Ceiling fan not working" maxlength="80"></div>
+      <div class="two"><div class="f"><label for="cat">Category</label><select id="cat">${D.cats.map(c=>`<option ${d.category===c?"selected":""}>${c}</option>`).join("")}</select></div>
+      <div class="f"><label for="pri">Priority</label><select id="pri">${["Low","Medium","High"].map(c=>`<option ${d.priority===c?"selected":""}>${c}</option>`).join("")}</select></div></div>
+      <div class="f"><label for="loc">Location</label><input type="text" id="loc" list="places" value="${esc(d.loc)}" placeholder="Block A · Floor 2 · Room 204"><datalist id="places">${PLACES.map(p=>`<option value="${p} · ">`).join("")}</datalist></div>
+      <div class="f"><label for="desc">Details</label><textarea id="desc" placeholder="What is wrong and since when?">${esc(d.desc)}</textarea></div>
+      <div class="f"><span class="lab">Photo</span><div class="drop"><input type="file" id="photo" accept="image/*" aria-label="Upload a photo"><div class="hint" style="margin-top:6px">A photo helps staff find and fix the problem faster.</div>${d.photo?`<img src="${d.photo}" alt="Photo of the problem">`:""}</div></div>
+      <div class="f"><label class="check"><input type="checkbox" id="anon" ${d.anon?"checked":""}>Report anonymously</label></div>
+      <button class="btn main" type="submit">Submit complaint</button><p class="hint" id="err" role="alert" style="color:var(--r-fg);margin:8px 0 0"></p></form>
+    <div><h2 style="margin-bottom:6px">My complaints</h2>${items(mine,"Nothing reported yet.")}
+      ${mineOf().length>4?`<p style="margin:12px 0 0"><button class="btn sm" data-act="nav" data-v="mine">See all ${mineOf().length}</button></p>`:""}
+      ${sim.length?`<div class="note"><b>Similar issue found:</b> ${sim.map(c=>`<div class="sim"><span>“${esc(c.title)}, ${esc(c.loc.split("·").slice(0,1)[0].trim())}” was reported ${hrs(Date.now()-c.created)} ago.</span><span class="actions"><button type="button" class="btn sm" data-act="open" data-id="${c.id}">View</button><button type="button" class="btn sm" data-act="vote" data-id="${c.id}">Upvote (${c.votes})</button></span></div>`).join("")}<div style="margin-top:10px">Upvote it instead?</div></div>`:""}
+    </div></div>`;
+  },
+  mine(){const m=mineOf();return `<div class="head"><div><h1>My complaints</h1><p>${m.length} reported. Select one to see its progress.</p></div><button class="btn blue" data-act="nav" data-v="report">Report a problem</button></div>${tiles(m)}${items(m,"Nothing reported yet.","full")}`},
+  issues(){const v=filtered();return `<div class="head"><div><h1>Campus issues</h1><p>Problems reported by everyone. Upvote one that affects you too.</p></div></div>${filters(`<select id="sort" aria-label="Sort"><option value="new" ${U.sort==="new"?"selected":""}>Newest</option><option value="votes" ${U.sort==="votes"?"selected":""}>Most upvoted</option><option value="priority" ${U.sort==="priority"?"selected":""}>Priority</option></select>`)}<label class="check" style="margin:8px 0"><input type="checkbox" id="hd" ${U.hideDone?"checked":""}>Hide closed issues</label>${items(v,"No issues match these filters.","full")}`},
+  manage(){const v=filtered();return `<div class="head"><div><h1>Complaints</h1><p>${v.length} shown. Open one to review, assign or close it.</p></div></div>${filters(`<select id="sort" aria-label="Sort"><option value="new" ${U.sort==="new"?"selected":""}>Newest</option><option value="priority" ${U.sort==="priority"?"selected":""}>Priority</option><option value="votes" ${U.sort==="votes"?"selected":""}>Most upvoted</option></select>`)}${items(v,"No complaints match these filters.","full")}`},
+  dash(){
+    const q=D.complaints.filter(c=>["Submitted","Under Review"].includes(c.status)).sort((a,b)=>["High","Medium","Low"].indexOf(a.priority)-["High","Medium","Low"].indexOf(b.priority));
+    const COL=["#9a968a","#d6a528","#4f7fb5","#c4601f","#3b8a56","#6b675c"];
+    const st=STATUSES.map((s,i)=>[s,D.complaints.filter(c=>c.status===s).length,COL[i]]),tot=Math.max(1,D.complaints.length);
+    const segs=st.filter(x=>x[1]).map(([s,n,c])=>`<i style="width:${n/tot*100}%;background:${c}" title="${s}: ${n}"></i>`).join("");
+    const days=[...Array(7)].map((_,k)=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-(6-k));const a=d.getTime(),b=a+864e5;return {l:d.toLocaleDateString("en-IN",{weekday:"short"}),n:D.complaints.filter(c=>c.created>=a&&c.created<b).length,today:k===6}});
+    const mx=Math.max(1,...days.map(d=>d.n));
+    return `<div class="head"><div><h1>Dashboard</h1><p>What needs attention first.</p></div></div>${tiles(D.complaints)}
+    <div class="cols" style="margin-bottom:30px"><div class="card"><h2>Status of all complaints</h2><div class="stack" role="img" aria-label="Complaints by status">${segs}</div><div class="legend">${st.map(([s,n,c])=>`<span><i style="background:${c}"></i>${s}<b>${n}</b></span>`).join("")}</div></div>
+    <div class="card"><h2>Reported in the last 7 days</h2><div class="trend">${days.map(d=>`<div class="${d.today?"today":""}"><b>${d.n}</b><i style="height:${Math.max(4,d.n/mx*100)}%"></i>${d.l}</div>`).join("")}</div></div></div>
+    <h2 style="margin-bottom:6px">Needs review</h2>${items(q,"Nothing is waiting. Good work.","full")}`;
+  },
+  work(){
+    const a=D.complaints.filter(c=>c.mineAssigned&&c.status!=="Closed");
+    const todo=a.filter(c=>["Assigned","In Progress"].includes(c.status)),done=a.filter(c=>c.status==="Resolved");
+    return `<div class="head"><div><h1>My work</h1><p>Complaints assigned to ${me()}.</p></div></div>${tiles(a)}<h2 style="margin-bottom:6px">To do</h2>${items(todo,"No work assigned right now.","full")}<h2 style="margin:26px 0 6px">Waiting for the user to close</h2>${items(done,"Nothing waiting.","full")}`;
+  },
+  notes(){
+    const n=D.notifs;
+    return `<div class="head"><div><h1>Notifications</h1><p>${unread()} unread.</p></div>${unread()?`<button class="btn" data-act="readall">Mark all as read</button>`:""}</div>${n.length?n.map(x=>`<div class="nitem ${x.read?"read":""}"><span class="dot"></span><div><div>${esc(x.text)}</div><div class="hint">${fmt(x.ts)}</div></div></div>`).join(""):`<div class="empty">No notifications yet.</div>`}`;
+  },
+  profile(){
+    const m=mineOf(),P=D.me.prefs;
+    return `<div class="head"><div><h1>Profile</h1><p>Your account and preferences.</p></div></div>
+    <div class="cols"><div><div style="margin-bottom:20px"><h2>${esc(me())}</h2><div class="hint">${D.me.roleLabel} · ${esc(D.me.dept)}</div><div class="hint">${esc(D.me.email)}</div></div>
+      ${U.role==="student"?`<div class="tiles" style="grid-template-columns:1fr 1fr"><div class="tile"><div class="n">${m.length}</div><div class="l">Complaints reported</div></div><div class="tile"><div class="n">${m.filter(c=>["Resolved","Closed"].includes(c.status)).length}</div><div class="l">Fixed</div></div></div>`:""}
+      <div class="f"><label for="th">Appearance</label><select id="th"><option value="auto" ${D.me.theme==="auto"?"selected":""}>Match my device</option><option value="light" ${D.me.theme==="light"?"selected":""}>Light</option><option value="dark" ${D.me.theme==="dark"?"selected":""}>Dark</option></select></div>
+      <h2 style="margin:26px 0 10px">Change password</h2>
+      <form id="pwf"><div class="f"><label for="pc">Current password</label><input type="password" id="pc" autocomplete="current-password"></div><div class="f"><label for="pn">New password (6 or more characters)</label><input type="password" id="pn" autocomplete="new-password"></div><button class="btn" type="submit">Change password</button></form></div>
+    <div><h2 style="margin-bottom:6px">Notification settings</h2>
+      <div class="switch"><span>Status changes on my complaints</span><input type="checkbox" data-pref="status" aria-label="Status changes" ${P.status?"checked":""}></div>
+      <div class="switch"><span>New comments</span><input type="checkbox" data-pref="comments" aria-label="New comments" ${P.comments?"checked":""}></div>
+      <div class="switch"><span>Weekly summary email</span><input type="checkbox" data-pref="digest" aria-label="Weekly summary" ${P.digest?"checked":""}></div></div></div>`;
+  },
+  reports(){
+    const all=D.complaints,done=all.filter(c=>["Resolved","Closed"].includes(c.status));
+    const times=done.map(c=>c.history.find(h=>h.status==="Resolved")).map((h,i)=>h?h.ts-done[i].created:null).filter(Boolean);
+    const avg=times.length?hrs(times.reduce((a,b)=>a+b,0)/times.length):"-";
+    const rated=all.filter(c=>c.rating),rt=rated.length?(rated.reduce((a,c)=>a+c.rating,0)/rated.length).toFixed(1):"-";
+    const st=STATUSES.map(s=>[s,all.filter(c=>c.status===s).length]);
+    const pl={};all.forEach(c=>pl[place(c)]=(pl[place(c)]||0)+1);
+    const places=Object.entries(pl).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    const cats=D.cats.map(k=>[k,all.filter(c=>c.category===k).length]).sort((a,b)=>b[1]-a[1]);
+    return `<div class="head"><div><h1>Reports</h1><p>Which problems happen most often, and how fast they are fixed.</p></div><div class="actions"><button class="btn" data-act="copysum">Copy summary</button><a class="btn" href="/api/export.csv" download>Download CSV</a></div></div>
+    <div class="tiles"><div class="tile"><div class="n">${all.length}</div><div class="l">Total complaints</div></div><div class="tile c3"><div class="n">${all.length?Math.round(done.length/all.length*100):0}%</div><div class="l">Resolved or closed</div></div><div class="tile c2"><div class="n">${avg}</div><div class="l">Average time to resolve</div></div><div class="tile c4"><div class="n">${rt}</div><div class="l">Average user rating (of 5)</div></div></div>
+    <div class="cols"><div class="card"><h2>By status</h2>${bars(st)}</div><div class="card"><h2>By category</h2>${bars(cats,true)}</div></div>
+    <div class="card" style="margin-top:28px"><h2>Problem spots</h2>${bars(places)}</div>`;
+  },
+  users(){return `<div class="head"><div><h1>Users</h1><p>${D.users.length} accounts.</p></div></div><div class="scroll"><table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Department</th><th></th></tr></thead><tbody>${D.users.map(u=>`<tr><td>${esc(u.name)}</td><td>${esc(u.email)}</td><td>${u.roleLabel}</td><td>${esc(u.dept)}</td><td>${u.id===D.me.id?"":`<button class="btn sm bad" data-act="rmuser" data-id="${u.id}" aria-label="Remove ${esc(u.name)}">Remove</button>`}</td></tr>`).join("")}</tbody></table></div>
+    <h2 style="margin:28px 0 10px">Add a user</h2>
+    <form id="uf" class="actions" style="align-items:flex-end"><div class="f" style="margin:0"><label for="un">Full name</label><input type="text" id="un" style="width:200px"></div><div class="f" style="margin:0"><label for="ue">Email</label><input type="email" id="ue" style="width:240px"></div><div class="f" style="margin:0"><label for="up">Password</label><input type="text" id="up" style="width:140px" value="password"></div><div class="f" style="margin:0"><label for="ud">Department</label><input type="text" id="ud" style="width:150px" list="deptl"><datalist id="deptl">${D.depts.map(d=>`<option value="${esc(d)}">`).join("")}</datalist></div><div class="f" style="margin:0"><label for="ur">Role</label><select id="ur" style="width:auto">${[["student","Student"],["faculty","Faculty"],["admin","Department admin"],["staff","Maintenance staff"]].map(([v,l])=>`<option value="${v}">${l}</option>`).join("")}</select></div><button class="btn blue" type="submit">Add user</button></form>`},
+  setup(){return `<div class="head"><div><h1>Setup</h1><p>Categories and departments used by the report form and for routing.</p></div></div><div class="cols"><div class="card"><h2>Categories</h2><div class="actions" style="margin-bottom:16px">${D.cats.map(c=>`<span class="pill s-Assigned">${esc(c)}</span>`).join("")}</div><form id="cf" class="actions"><input type="text" id="nc" placeholder="New category" aria-label="New category" style="flex:1"><button class="btn blue" type="submit">Add</button></form></div>
+    <div class="card"><h2>Departments</h2><div class="actions" style="margin-bottom:16px">${D.depts.map(c=>`<span class="pill s-InProgress">${esc(c)}</span>`).join("")}</div><form id="df" class="actions"><input type="text" id="nd" placeholder="New department" aria-label="New department" style="flex:1"><button class="btn blue" type="submit">Add</button></form></div></div>`}
+};
+
+function drawer(){
+  const c=byId(U.open);if(!c)return"";
+  const R=U.role,mineC=c.mine,idx=STATUSES.indexOf(c.status);let acts="",extra="";
+  if(R==="student"&&mineC&&c.status==="Resolved")extra=`<div class="card"><h3 style="margin-bottom:8px">Is the problem fixed?</h3><div class="hint" style="margin-bottom:8px">Rate the repair, then close the complaint. If it is still broken, reopen it.</div><div class="stars" role="group" aria-label="Rating">${[1,2,3,4,5].map(n=>`<button type="button" data-act="rate" data-n="${n}" class="${U.rate>=n?"on":""}" aria-label="${n} star${n>1?"s":""}">★</button>`).join("")}</div><div class="actions" style="margin-top:12px"><button class="btn blue" data-act="close">Close complaint</button><button class="btn bad" data-act="reopen">Reopen</button></div></div>`;
+  if(R==="admin"&&c.status==="Submitted")acts=`<button class="btn blue" data-act="review">Start review</button><button class="btn" data-act="dup">Mark as duplicate</button>`;
+  if(R==="admin"&&c.status==="Under Review"){const dep=D.catDept[c.category];acts=`<select id="as" aria-label="Assign to" style="width:auto">${D.staff.map(s=>`<option value="${s.id}" ${s.dept===dep?"selected":""}>${esc(s.name)} (${esc(s.dept)})</option>`).join("")}</select><select id="ap" aria-label="Priority" style="width:auto">${["Low","Medium","High"].map(p=>`<option ${c.priority===p?"selected":""}>${p}</option>`).join("")}</select><button class="btn blue" data-act="assign">Assign</button><button class="btn" data-act="dup">Mark as duplicate</button>`}
+  if(R==="staff"&&c.mineAssigned&&c.status==="Assigned")acts=`<button class="btn blue" data-act="start">Start work</button>`;
+  if(R==="staff"&&c.mineAssigned&&c.status==="In Progress")acts=`<button class="btn blue" data-act="resolve">Mark as resolved</button>`;
+  return `<div class="scrim" data-act="scrim"><aside class="drawer" role="dialog" aria-modal="true" aria-label="Complaint ${c.id}">
+    <div class="actions" style="justify-content:space-between"><span class="hint">${c.id} · ${c.category}</span><button class="btn sm" data-act="shut">Close panel</button></div>
+    <div class="dhead"><div><h2 style="font-size:22px">${esc(c.title)}</h2><div class="actions" style="margin-top:8px">${pill(c.status)}<span class="chip ${c.priority}">${c.priority} priority</span></div></div></div>
+    <div class="stepper" role="img" aria-label="Progress: ${c.status}">${STATUSES.map((s,i)=>`<div class="st ${i<=idx?"on":""} ${i===idx?"cur":""}"><span class="dotc">${i+1}</span>${s}</div>`).join("")}</div>
+    <div class="hint">${esc(c.loc)} · Reported by ${esc(who(c))} on ${fmt(c.created)}${c.assignee?` · Assigned to ${esc(c.assignee)}`:""}</div>
+    <p style="margin:0">${esc(c.desc)}</p>${c.photo?`<img class="photo" src="${esc(c.photo)}" alt="Photo of the problem">`:""}
+    ${c.rating?`<div class="hint">User rating: ${"★".repeat(c.rating)}${"☆".repeat(5-c.rating)}</div>`:""}
+    <div class="actions"><button class="btn sm" data-act="vote" data-id="${c.id}" aria-label="Upvote">${c.voted?"▼ Remove upvote":"▲ Upvote"} (${c.votes})</button>${acts}</div>${extra}
+    <div><h3 style="margin-bottom:12px">Status history</h3><ul class="timeline">${c.history.map(h=>`<li><div><b>${h.status}</b><small>${esc(h.by)} · ${fmt(h.ts)}</small></div></li>`).join("")}</ul></div>
+    <div><h3 style="margin-bottom:12px">Comments (${c.comments.length})</h3>${c.comments.map(m=>`<div class="cm"><b>${esc(m.by)}</b> <span class="hint">${fmt(m.ts)}</span><br>${esc(m.text)}</div>`).join("")||`<p class="hint" style="margin:0 0 10px">No comments yet.</p>`}
+    <form id="cmf" class="actions"><input type="text" id="cmt" placeholder="Add a comment" aria-label="Add a comment" style="flex:1"><button class="btn" type="submit">Post</button></form></div>
+  </aside></div>`;
+}
+function shell(){
+  const u=unread();
+  return `<div class="app"><aside class="side"><div class="logo">CPRS<small>Campus Problem Reporting System</small></div>
+  <nav aria-label="Main">${NAV[U.role].map(([k,l,i])=>`<button data-act="nav" data-v="${k}" ${U.view===k?'aria-current="page"':""}><span>${l}</span>${k==="notes"&&u?`<span class="badge">${u}</span>`:""}</button>`).join("")}</nav>
+  <div class="me"><b>${esc(me())}</b><span>${D.me.roleLabel}</span><br><button data-act="logout">Sign out</button></div></aside>
+  <div class="work"><div class="topbar"><span class="date">${new Date().toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long"})}</span>${["student","staff"].includes(U.role)?`<form id="gs" class="gsearch" role="search"><input type="text" id="gq" placeholder="Search campus issues" aria-label="Search campus issues"></form>`:""}${U.role!=="sysadmin"?`<button class="ib" data-act="nav" data-v="notes">Notifications${u?`<span class="badge">${u}</span>`:""}</button>`:""}</div><main class="page" id="main">${VIEWS[U.view]()}</main></div></div>${drawer()}`;
+}
+
+/* ---------- render and events ---------- */
+function render(keep){
+  const a=document.activeElement,id=a&&a.id,pos=a&&a.selectionStart,top=$(".work")?$(".work").scrollTop:0;
+  $("#app").innerHTML=U.role&&D.me?shell():loginView();
+  if($(".work"))$(".work").scrollTop=top;
+  if(keep&&id){const e=document.getElementById(id);if(e){e.focus();try{e.setSelectionRange(pos,pos)}catch(_){}}}
+}
+function resize(file){
+  return new Promise((ok,no)=>{
+    const img=new Image(),url=URL.createObjectURL(file);
+    img.onload=()=>{const k=Math.min(1,1280/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);ok(c.toDataURL("image/jpeg",0.82))};
+    img.onerror=()=>no(new Error("That file is not a picture."));img.src=url;
+  });
+}
+const post=(p,b)=>api(p,b||{});
+document.addEventListener("click",async e=>{
+  const t=e.target.closest("[data-act]");if(!t)return;
+  const a=t.dataset.act,id=t.dataset.id||U.open;
+  if(a==="scrim"){if(e.target===t){U.open=null;render()}return}
+  const cp=p=>"complaints/"+id.slice(1)+"/"+p;
+  switch(a){
+    case"lrole":U.lr=t.dataset.r;U.em=ROLES[U.lr].email;U.err="";render();$("#pw").value="password";return;
+    case"toggle-reg":U.reg=!U.reg;U.err="";render();return;
+    case"logout":await post("logout");D.me=null;U.role=null;U.open=null;U.view=null;try{PUB=await api("public")}catch(_){}render();return;
+    case"nav":U.view=t.dataset.v;U.open=null;U.q="";U.fs="All";U.fc="All";render();return;
+    case"open":U.open=t.dataset.id;U.rate=0;render();return;
+    case"shut":U.open=null;render();return;
+    case"rate":U.rate=+t.dataset.n;render();return;
+    case"vote":return act(()=>post(cp("vote")));
+    case"close":{const r=U.rate;U.rate=0;return act(()=>post(cp("close"),{rating:r||null}),"Complaint closed. Thank you.")}
+    case"reopen":return act(()=>post(cp("reopen")),"Complaint reopened");
+    case"review":return act(()=>post(cp("review")),"Review started");
+    case"dup":return act(()=>post(cp("dup")),"Marked as duplicate");
+    case"assign":return act(()=>post(cp("assign"),{staffId:$("#as").value,priority:$("#ap").value}),"Assigned");
+    case"start":return act(()=>post(cp("start")),"Marked in progress");
+    case"resolve":return act(()=>post(cp("resolve")),"Marked resolved");
+    case"readall":return act(()=>post("notifications/read"));
+    case"rmuser":if(!confirm("Remove this user? They will no longer be able to sign in."))return;return act(()=>post("users/"+id+"/delete"),"User removed");
+    case"copysum":{const c=D.complaints,d=c.filter(x=>["Resolved","Closed"].includes(x.status)).length;const txt=`CPRS summary: ${c.length} complaints, ${d} resolved or closed, ${c.filter(x=>x.priority==="High"&&!["Resolved","Closed"].includes(x.status)).length} high priority open.`;try{navigator.clipboard.writeText(txt).then(()=>toast("Summary copied"),()=>toast(txt))}catch(_){toast(txt)}return}
+  }
+});
+document.addEventListener("input",e=>{
+  const i=e.target.id,d=U.draft;
+  if(i==="q"){U.q=e.target.value;render(true)}
+  else if(i==="title"){d.title=e.target.value;render(true)}
+  else if(i==="loc"){d.loc=e.target.value;render(true)}
+  else if(i==="desc")d.desc=e.target.value;
+  else if(i==="em")U.em=e.target.value;
+});
+document.addEventListener("change",async e=>{
+  const i=e.target.id,d=U.draft;
+  if(i==="fs"){U.fs=e.target.value;render()}
+  else if(i==="fc"){U.fc=e.target.value;render()}
+  else if(i==="sort"){U.sort=e.target.value;render()}
+  else if(i==="hd"){U.hideDone=e.target.checked;render()}
+  else if(i==="cat"){d.category=e.target.value;render()}
+  else if(i==="pri")d.priority=e.target.value;
+  else if(i==="anon")d.anon=e.target.checked;
+  else if(i==="th"){const v=e.target.value;D.me.theme=v;applyTheme();return act(()=>post("settings",{theme:v}))}
+  else if(e.target.dataset.pref){const k=e.target.dataset.pref,v=e.target.checked;D.me.prefs[k]=v;return act(()=>post("settings",{prefs:{[k]:v}}),"Setting saved")}
+  else if(i==="photo"){const f=e.target.files[0];if(!f)return;try{d.photo=await resize(f);render()}catch(x){toast(x.message)}}
+});
+document.addEventListener("submit",async e=>{
+  e.preventDefault();const i=e.target.id,d=U.draft;
+  const v=x=>$("#"+x)?$("#"+x).value:"";
+  const bad=(m,f)=>{U.err=m;const el=$("#err");if(el)el.textContent=m;if(f&&$("#"+f))$("#"+f).focus()};
+  if(i==="lf"){
+    try{await post("login",{email:v("em"),password:v("pw")});U.err="";U.view=null;await refresh();render()}catch(x){bad(x.message,"pw")}
+  }else if(i==="rgf"){
+    try{await post("register",{name:v("rn"),email:v("re"),dept:v("rd"),password:v("rp")});U.err="";U.reg=false;U.view=null;await refresh();render();toast("Account created. Welcome!")}catch(x){bad(x.message,"re")}
+  }else if(i==="rf"){
+    try{const r=await post("complaints",{title:d.title,category:d.category,priority:d.priority,loc:d.loc,desc:d.desc,anon:d.anon,photo:d.photo});
+      U.draft=blankDraft();U.view="mine";await refresh();U.open=r.id;render();toast("Submitted. Your complaint ID is "+r.id)}catch(x){bad(x.message,"title")}
+  }else if(i==="cmf"){const t=v("cmt").trim();if(!t)return;act(()=>post("complaints/"+U.open.slice(1)+"/comment",{text:t}))}
+  else if(i==="gs"){U.q=v("gq").trim();U.view="issues";U.fs="All";U.fc="All";U.open=null;render()}
+  else if(i==="uf"){act(()=>post("users",{name:v("un"),email:v("ue"),password:v("up"),dept:v("ud"),role:v("ur")}),"User added")}
+  else if(i==="cf"){act(()=>post("categories",{name:v("nc")}),"Category added")}
+  else if(i==="df"){act(()=>post("departments",{name:v("nd")}),"Department added")}
+  else if(i==="pwf"){act(async()=>{await post("password",{current:v("pc"),next:v("pn")});e.target.reset()},"Password changed")}
+});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&U.open){U.open=null;render()}});
+/* keep the page fresh when other people change things, without disturbing typing */
+setInterval(async()=>{
+  if(!D.me||document.hidden)return;
+  const a=document.activeElement;if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))return;
+  await refresh();if(D.me)render();
+},20000);
+(async()=>{await refresh();render()})();
+</script>
+</body>
+</html>
